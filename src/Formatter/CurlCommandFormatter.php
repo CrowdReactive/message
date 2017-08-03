@@ -39,7 +39,9 @@ class CurlCommandFormatter implements Formatter
             if (!$body->isSeekable()) {
                 return 'Cant format Request as cUrl command if body stream is not seekable.';
             }
-            $command .= sprintf(' --data %s', escapeshellarg($body->__toString()));
+
+            $bodyString = str_replace("\0", '', $body->__toString());
+            $command .= sprintf(' --data %s', escapeshellarg($bodyString));
             $body->rewind();
         }
 

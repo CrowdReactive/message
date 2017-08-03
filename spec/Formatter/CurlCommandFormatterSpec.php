@@ -72,4 +72,20 @@ class CurlCommandFormatterSpec extends ObjectBehavior
 
         $this->formatRequest($request)->shouldReturn("curl 'http://foo.com/bar' -A 'foobar-browser'");
     }
+
+    function it_formats_a_request_with_null_bytes_in_body(RequestInterface $request, UriInterface $uri, StreamInterface $body)
+    {
+        $body->__toString()->willReturn("--something=nullbyte\0");
+        $request->getUri()->willReturn($uri);
+        $request->getBody()->willReturn($body);
+
+        $uri->withFragment('')->shouldBeCalled()->willReturn('http://foo.com/bar');
+        $request->getMethod()->willReturn('GET');
+        $request->getProtocolVersion()->willReturn('1.1');
+
+        $request->getHeaders()->willReturn(['foo'=>['bar', 'baz']]);
+        $request->getHeaderLine('foo')->willReturn('bar, baz');
+
+        $this->formatRequest($request)->shouldReturn('curl \'http://foo.com/bar\' -H \'foo: bar, baz\'');
+    }
 }
